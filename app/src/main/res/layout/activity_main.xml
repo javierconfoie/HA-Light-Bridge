@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="30dp"
+        tools:context=".MainActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/light_dev"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="dev/ttyS0"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+
+            <Button
+                android:id="@+id/light_rate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="9600"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+
+            <Button
+                android:id="@+id/light_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/open"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_crazy_mode"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <EditText
+                android:id="@+id/light_crazy_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/light_crazy_mode_edit_tip"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <Button
+                android:id="@+id/light_crazy_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_flash_mode"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <EditText
+                android:id="@+id/light_flash_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/light_flash_mode_edit_tip"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <Button
+                android:id="@+id/light_flash_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_live_mode"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <RadioGroup
+                android:id="@+id/light_live_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/light_live_red"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_red"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/light_live_green"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_green"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/light_live_blue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_blue"></RadioButton>
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/light_live_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/light_live_mode_edit_tip"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <Button
+                android:id="@+id/light_live_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_keep_mode"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <RadioGroup
+                android:id="@+id/light_keep_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/light_keep_red"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_red"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/light_keep_green"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_green"></RadioButton>
+
+                <RadioButton
+                    android:id="@+id/light_keep_blue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/led_blue"></RadioButton>
+            </RadioGroup>
+
+            <EditText
+                android:id="@+id/light_keep_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/light_keep_mode_edit_tip"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <EditText
+                android:id="@+id/light_keep_light_edit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:hint="@string/light_value_range"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <Button
+                android:id="@+id/light_keep_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_close_control"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <CheckBox
+                android:id="@+id/light_close_red"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/led_red"></CheckBox>
+
+            <CheckBox
+                android:id="@+id/light_close_green"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/led_green"></CheckBox>
+
+            <CheckBox
+                android:id="@+id/light_close_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/led_blue"></CheckBox>
+
+            <EditText
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:gravity="center"
+                android:hint="@string/light_close_control_edit_tip"
+                android:inputType="number"
+                android:textAllCaps="false"
+                android:textSize="26sp"></EditText>
+
+            <Button
+                android:id="@+id/light_close_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginLeft="30dp"
+                android:text="@string/settings"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:padding="20dp"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <Button
+                android:id="@+id/light_state_resume_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_state_resume"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/light_state_txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:padding="20dp"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <Button
+                android:id="@+id/light_state_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/light_state_current"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/light_help_txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:padding="20dp"
+                android:textAllCaps="false"
+                android:textSize="26sp"></TextView>
+
+            <Button
+                android:id="@+id/light_help_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/help"
+                android:textAllCaps="false"
+                android:textSize="26sp"></Button>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt_red_cut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FF0000"
+                android:onClick="onRedCut"
+                android:text="-"></Button>
+
+            <Button
+                android:id="@+id/bt_red_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FF0000"
+                android:onClick="onRedAdd"
+                android:text="+"></Button>
+
+            <Button
+                android:id="@+id/bt_green_cut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#00FF00"
+                android:onClick="onGreenCut"
+                android:text="-"></Button>
+
+            <Button
+                android:id="@+id/bt_green_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00FF00"
+                android:onClick="onGreenAdd"
+                android:text="+"></Button>
+
+            <Button
+                android:id="@+id/bt_blue_cut"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:background="#0000FF"
+                android:onClick="onBlueCut"
+                android:text="-"></Button>
+
+            <Button
+                android:id="@+id/bt_blue_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0000FF"
+                android:onClick="onBlueAdd"
+                android:text="+"></Button>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0000FF"
+                android:onClick="onBlue"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_red"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FF0000"
+                android:onClick="onRed"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_green"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00A500"
+                android:onClick="onGreen"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_pink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FF2DA0"
+                android:onClick="onPink"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_pyellow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FAFF00"
+                android:onClick="onPyellow"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_white"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:onClick="onWhite"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_purple"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#730073"
+                android:onClick="onPurple"
+                android:layout_weight="1" />
+            <Button
+                android:id="@+id/bt_orange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#FF5000"
+                android:onClick="onOrange"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

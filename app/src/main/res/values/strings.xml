@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">HA Light Bridge</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="settings">Set up</string>
+    <string name="mqtt_settings">MQTT Settings</string>
+    <string name="mqtt_host">MQTT Broker Host</string>
+    <string name="mqtt_port">Port</string>
+    <string name="mqtt_user">Username (optional)</string>
+    <string name="mqtt_pass">Password (optional)</string>
+    <string name="mqtt_device_id">Device ID</string>
+    <string name="mqtt_device_id_hint">tablet_led</string>
+    <string name="mqtt_save">Save &amp; Connect</string>
+    <string name="mqtt_disconnect">Disconnect</string>
+    <string name="mqtt_status">Status</string>
+    <string name="mqtt_status_disconnected">Disconnected</string>
+    <string name="mqtt_status_connected">Connected</string>
+    <string name="mqtt_status_connecting">Connecting…</string>
+    <string name="mqtt_status_error">Error</string>
+    <string name="mqtt_notification_title">HA Light Bridge</string>
+    <string name="mqtt_notification_text">Connected to MQTT broker</string>
+    <string name="mqtt_settings_button">MQTT Settings</string>
+    <string name="mqtt_open_test_ui">Open LED Test Panel</string>
+    <string name="led_red">Red</string>
+    <string name="led_green">Green</string>
+    <string name="led_blue">Blue</string>
+    <string name="light_range_tip">The brightness value is out of range (0 ~ 255)</string>
+    <string name="light_crazy_mode">Light crazy mode:</string>
+    <string name="light_crazy_mode_edit_tip">(> 0 seconds after walking, the light goes out, = 0 light keeps flashing)</string>
+    <string name="light_flash_mode">Light flash mode:</string>
+    <string name="light_flash_mode_edit_tip">(> = 1 in 0.1 seconds)</string>
+    <string name="light_live_mode">Light live mode:</string>
+    <string name="light_live_mode_edit_tip">(> = 2 in seconds)</string>
+    <string name="light_keep_mode">Light keep mode:</string>
+    <string name="light_keep_mode_edit_tip">(> 0 seconds after walking, the light is off, = 0 light is on all the time)</string>
+    <string name="light_value_range">brightness value(0~255)</string>
+    <string name="light_close_control">Light off control:</string>
+    <string name="light_close_control_edit_tip">(select the light color you want to turn off, and you can turn it off together)</string>
+    <string name="light_state_resume">Restore default state</string>
+    <string name="light_state_current">Current lamp board status</string>
+    <string name="help">Help manual</string>
+</resources>

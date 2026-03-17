@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">HA Light Bridge</string>
+    <string name="open">打开</string>
+    <string name="close">关闭</string>
+    <string name="settings">设置</string>
+    <string name="led_red">红灯</string>
+    <string name="led_green">绿灯</string>
+    <string name="led_blue">蓝灯</string>
+    <string name="light_range_tip">亮度值超出了范围(0~255)</string>
+    <string name="light_crazy_mode">乱闪模式:</string>
+    <string name="light_crazy_mode_edit_tip">(>0秒时间走完灯灭,=0灯不停乱闪)</string>
+    <string name="light_flash_mode">闪烁模式:</string>
+    <string name="light_flash_mode_edit_tip">（>=1 ，单位为0.1秒）</string>
+    <string name="light_live_mode">呼吸灯模式:</string>
+    <string name="light_live_mode_edit_tip">（>=2，单位为秒）</string>
+    <string name="light_keep_mode">常亮模式:</string>
+    <string name="light_keep_mode_edit_tip">(>0秒时间走完灯灭,=0灯一直亮)</string>
+    <string name="light_value_range">亮度值(0~255)</string>
+    <string name="light_close_control">关灯控制:</string>
+    <string name="light_close_control_edit_tip">(选择想关的灯色，可以一起关)</string>
+    <string name="light_state_resume">恢复默认状态</string>
+    <string name="light_state_current">当前灯板状态</string>
+    <string name="help">帮助手册</string>
+</resources>
