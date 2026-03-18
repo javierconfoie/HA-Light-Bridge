@@ -1,6 +1,6 @@
 # HA Light Bridge
 
-Android app that bridges **Home Assistant** with **built-in RGB LED strips** on tablets that use serial-controlled LEDs (via `/dev/ttyS3`). Originally designed for YS-branded Android tablets with embedded LED light strips.
+Android app that bridges **Home Assistant** with **built-in RGB LED strips** on tablets that use serial-controlled LEDs. Originally designed for YS-branded Android tablets with embedded LED light strips.
 
 ## What it does
 
@@ -8,6 +8,7 @@ Turns your tablet's built-in LED strip into a fully controllable **Home Assistan
 
 - **RGB color control** with gamma-corrected output (γ=2.2)
 - **Brightness control** (0–255)
+- **Configurable serial port** — select from available ports (`/dev/ttyS0`–`/dev/ttyS7`, `/dev/ttyUSB0`–`/dev/ttyUSB1`)
 - **Effects**: Solid, Breathing, Flash, Crazy
 - **Breathing speed** slider (exposed as a separate HA `number` entity, 1–10)
 - **State persistence** — remembers last color/brightness/effect across reboots
@@ -18,23 +19,23 @@ Turns your tablet's built-in LED strip into a fully controllable **Home Assistan
 ## Hardware
 
 Designed for tablets with:
-- **Serial LED controller** on `/dev/ttyS3` at **9600 baud**
+- **Serial LED controller** (default `/dev/ttyS3`, configurable) at **9600 baud**
 - **3-channel analog RGB strip** (not individually addressable / not IC)
 - Hardware color mapping: `LED.GREEN` → physical Red, `LED.BLUE` → physical Green, `LED.RED` → physical Blue
 
-Tested on YS-branded Android tablets (Rockchip SoC, Android 10/11).
+Tested on YS-branded Android tablets (Rockchip SoC, Android 14).
 
 ## Architecture
 
 ```
-Home Assistant ←→ MQTT Broker ←→ [MqttLightService] ←→ Serial Port (/dev/ttyS3) ←→ LED Strip
+Home Assistant ←→ MQTT Broker ←→ [MqttLightService] ←→ Serial Port (configurable) ←→ LED Strip
                                          ↑
                                   Android Foreground Service
                                   (survives app close & reboot)
 ```
 
 The app has two components:
-1. **SettingsActivity** — Configure MQTT broker connection (host, port, user, password, device ID). Only needed once.
+1. **SettingsActivity** — Configure MQTT broker connection (host, port, user, password, device ID) and serial port. Only needed once.
 2. **MqttLightService** — Foreground service that maintains the MQTT connection and controls LEDs via serial. Runs independently of any UI.
 
 ## MQTT Topics

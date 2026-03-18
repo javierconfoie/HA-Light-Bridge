@@ -35,10 +35,12 @@ public class MqttLightService extends Service {
     private static final String TAG = "MqttLightService";
     private static final String CHANNEL_ID = "mqtt_light_service";
     private static final int NOTIFICATION_ID = 1;
-    private static final String SERIAL_DEVICE = "/dev/ttyS3";
+    private static final String DEFAULT_SERIAL_DEVICE = "/dev/ttyS3";
     private static final int BAUD_RATE = 9600;
     public static final String PREFS_NAME = "mqtt_settings";
     private static final String STATE_PREFS = "light_state";
+
+    private String serialDevice = DEFAULT_SERIAL_DEVICE;
 
     private MqttClient mqttClient;
     private Handler ledHandler;
@@ -89,6 +91,7 @@ public class MqttLightService extends Service {
         String host = prefs.getString("host", "");
         int port = prefs.getInt("port", 1883);
         String deviceId = prefs.getString("device_id", "tablet_led");
+        serialDevice = prefs.getString("serial_port", DEFAULT_SERIAL_DEVICE);
 
         if (host.isEmpty()) {
             updateNotification("No MQTT broker configured");
@@ -135,9 +138,9 @@ public class MqttLightService extends Service {
             public void run() {
                 try {
                     LightController.getInstance().close();
-                    LightController.getInstance().openDevice(MqttLightService.this, SERIAL_DEVICE, BAUD_RATE);
+                    LightController.getInstance().openDevice(MqttLightService.this, serialDevice, BAUD_RATE);
                     deviceOpen = true;
-                    Log.i(TAG, "Serial device opened: " + SERIAL_DEVICE);
+                    Log.i(TAG, "Serial device opened: " + serialDevice);
                 } catch (Exception e) {
                     Log.e(TAG, "Failed to open serial device", e);
                     deviceOpen = false;

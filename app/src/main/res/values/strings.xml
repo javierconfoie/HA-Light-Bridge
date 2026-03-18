@@ -21,6 +21,8 @@
     <string name="mqtt_notification_text">Connected to MQTT broker</string>
     <string name="mqtt_settings_button">MQTT Settings</string>
     <string name="mqtt_open_test_ui">Open LED Test Panel</string>
+    <string name="serial_port">Serial Port</string>
+
     <string name="led_red">Red</string>
     <string name="led_green">Green</string>
     <string name="led_blue">Blue</string>

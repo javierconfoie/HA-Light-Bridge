@@ -11,15 +11,30 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class SettingsActivity extends Activity {
     private EditText hostEdit, portEdit, userEdit, passEdit, deviceIdEdit;
+    private Spinner serialPortSpinner;
     private TextView statusText;
     private Button saveButton, disconnectButton, testUiButton;
+    private ArrayAdapter<String> portAdapter;
+
+    private static final String[] COMMON_PORTS = {
+            "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3",
+            "/dev/ttyS4", "/dev/ttyS5", "/dev/ttyS6", "/dev/ttyS7",
+            "/dev/ttyUSB0", "/dev/ttyUSB1"
+    };
 
     private BroadcastReceiver statusReceiver = new BroadcastReceiver() {
         @Override
@@ -43,6 +58,21 @@ public class SettingsActivity extends Activity {
         saveButton = findViewById(R.id.settings_save_btn);
         disconnectButton = findViewById(R.id.settings_disconnect_btn);
         testUiButton = findViewById(R.id.settings_test_ui_btn);
+        serialPortSpinner = findViewById(R.id.settings_serial_port);
+
+        // Populate serial port spinner with ports that exist on this device
+        List<String> availablePorts = new ArrayList<>();
+        for (String port : COMMON_PORTS) {
+            if (new File(port).exists()) {
+                availablePorts.add(port);
+            }
+        }
+        if (availablePorts.isEmpty()) {
+            availablePorts.addAll(Arrays.asList(COMMON_PORTS));
+        }
+        portAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, availablePorts);
+        portAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        serialPortSpinner.setAdapter(portAdapter);
 
         loadSettings();
 
@@ -88,6 +118,12 @@ public class SettingsActivity extends Activity {
         userEdit.setText(prefs.getString("user", ""));
         passEdit.setText(prefs.getString("pass", ""));
         deviceIdEdit.setText(prefs.getString("device_id", "tablet_led"));
+
+        String savedPort = prefs.getString("serial_port", "/dev/ttyS3");
+        int pos = portAdapter.getPosition(savedPort);
+        if (pos >= 0) {
+            serialPortSpinner.setSelection(pos);
+        }
     }
 
     private void saveAndConnect() {
@@ -118,6 +154,7 @@ public class SettingsActivity extends Activity {
         editor.putString("user", user);
         editor.putString("pass", pass);
         editor.putString("device_id", deviceId);
+        editor.putString("serial_port", serialPortSpinner.getSelectedItem().toString());
         editor.apply();
 
         // Stop existing service and restart
@@ -154,4 +191,5 @@ public class SettingsActivity extends Activity {
                 break;
         }
     }
+
 }

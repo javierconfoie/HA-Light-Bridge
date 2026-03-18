@@ -19,6 +19,19 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
+        <!-- Serial Port -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/serial_port"
+            android:textSize="16sp" />
+
+        <Spinner
+            android:id="@+id/settings_serial_port"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp" />
+
         <!-- Status -->
         <LinearLayout
             android:layout_width="match_parent"
