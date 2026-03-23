@@ -11,6 +11,10 @@ Turns your tablet's built-in LED strip into a fully controllable **Home Assistan
 - **Configurable serial port** — select from available ports (`/dev/ttyS0`–`/dev/ttyS7`, `/dev/ttyUSB0`–`/dev/ttyUSB1`)
 - **Effects**: Solid, Breathing, Flash, Crazy
 - **Breathing speed** slider (exposed as a separate HA `number` entity, 1–10)
+- **Screen brightness control** — adjusts tablet screen brightness via Android system API
+- **Screensaver brightness** — separate brightness level when Fully Kiosk screensaver is active
+- **Screensaver detection** — polls Fully Kiosk local API to detect screensaver state, exposed as `binary_sensor` in HA
+- **Instant brightness switching** — anticipates screensaver exit by monitoring user interaction timestamps for near-zero-latency brightness transitions
 - **State persistence** — remembers last color/brightness/effect across reboots
 - **Auto-start on boot** — runs as a foreground service, no need to open the app after initial setup
 - **Auto-reconnect** — recovers automatically if MQTT broker restarts
@@ -32,6 +36,10 @@ Home Assistant ←→ MQTT Broker ←→ [MqttLightService] ←→ Serial Port (
                                          ↑
                                   Android Foreground Service
                                   (survives app close & reboot)
+                                         ↓
+                              Fully Kiosk REST API (localhost:2323)
+                              → Screensaver state detection
+                              → Android system brightness control
 ```
 
 The app has two components:
@@ -49,6 +57,14 @@ The app has two components:
 | `{deviceId}/breathing_speed/state` | App → HA | Current breathing speed |
 | `homeassistant/light/{deviceId}/config` | App → HA | Auto-discovery config |
 | `homeassistant/number/{deviceId}_breathing_speed/config` | App → HA | Speed slider discovery |
+| `{deviceId}/screen_brightness/set` | HA → App | Screen brightness (1–255) |
+| `{deviceId}/screen_brightness/state` | App → HA | Current screen brightness |
+| `{deviceId}/screensaver_brightness/set` | HA → App | Screensaver brightness (1–255) |
+| `{deviceId}/screensaver_brightness/state` | App → HA | Current screensaver brightness |
+| `{deviceId}/screensaver/state` | App → HA | Screensaver active (ON/OFF) |
+| `homeassistant/number/{deviceId}_screen_brightness/config` | App → HA | Screen brightness discovery |
+| `homeassistant/number/{deviceId}_screensaver_brightness/config` | App → HA | Screensaver brightness discovery |
+| `homeassistant/binary_sensor/{deviceId}_screensaver/config` | App → HA | Screensaver sensor discovery |
 
 ## Setup
 
@@ -59,7 +75,20 @@ The app has two components:
 5. Tap **Connect**
 6. The light entity will appear automatically in Home Assistant
 
-After initial setup, the app runs as a background service. You can close/kill the app — the service persists. It also auto-starts on boot.
+### Screen Brightness Control (optional)
+
+Requires [Fully Kiosk Browser](https://www.fully-kiosk.com/) running on the same tablet with **Remote Administration** enabled.
+
+1. In Fully Kiosk: **Settings → Remote Administration → Enable Remote Administration** and set a password
+2. In HA Light Bridge: check **"Enable brightness control"** and enter the Fully Kiosk password
+3. Tap **Save & Connect**
+4. The first time, you'll be prompted to grant **"Modify System Settings"** permission — accept it
+5. Three new entities will appear in HA:
+   - `number.{deviceId}_screen_brightness` — brightness when screen is active (1–255)
+   - `number.{deviceId}_screensaver_brightness` — brightness when screensaver is on (1–255)
+   - `binary_sensor.{deviceId}_screensaver` — screensaver active state (ON/OFF)
+
+The app polls Fully Kiosk's local REST API (`localhost:2323`) every 500ms to detect screensaver state changes, and applies the corresponding brightness via Android's system settings API. User interaction is anticipated via `lastUserInteractionTime` for near-instant brightness transitions when exiting the screensaver.
 
 ## Building
 

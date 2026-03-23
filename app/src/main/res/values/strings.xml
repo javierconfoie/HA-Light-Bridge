@@ -22,6 +22,9 @@
     <string name="mqtt_settings_button">MQTT Settings</string>
     <string name="mqtt_open_test_ui">Open LED Test Panel</string>
     <string name="serial_port">Serial Port</string>
+    <string name="fully_section_title">Screen Brightness Control</string>
+    <string name="fully_brightness_enable">Enable brightness control (requires Fully Kiosk)</string>
+    <string name="fully_password">Fully Kiosk Remote Admin Password</string>
 
     <string name="led_red">Red</string>
     <string name="led_green">Green</string>

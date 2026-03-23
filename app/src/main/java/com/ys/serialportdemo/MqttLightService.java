@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.ys.serialport.LightController;
@@ -28,6 +30,10 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +70,26 @@ public class MqttLightService extends Service {
     private String speedCommandTopic;
     private String speedStateTopic;
     private String speedDiscoveryTopic;
+
+    // Brightness control topics
+    private String screenBrightnessCommandTopic;
+    private String screenBrightnessStateTopic;
+    private String screenBrightnessDiscoveryTopic;
+    private String screensaverBrightnessCommandTopic;
+    private String screensaverBrightnessStateTopic;
+    private String screensaverBrightnessDiscoveryTopic;
+    private String screensaverSensorStateTopic;
+    private String screensaverSensorDiscoveryTopic;
+
+    // Brightness control state
+    private boolean brightnessEnabled = false;
+    private String fullyPassword = "";
+    private int screenBrightness = 128;
+    private int screensaverBrightness = 10;
+    private boolean lastScreensaverState = false;
+    private long lastUserInteractionTime = 0;
+    private volatile boolean pollingRunning = false;
+    private Thread pollingThread = null;
 
     private volatile boolean reconnecting = false;
     private volatile boolean effectRunning = false;
@@ -107,6 +133,20 @@ public class MqttLightService extends Service {
         speedStateTopic = topicPrefix + "/breathing_speed/state";
         speedDiscoveryTopic = "homeassistant/number/" + deviceId + "_breathing_speed/config";
 
+        // Brightness control topics
+        screenBrightnessCommandTopic = topicPrefix + "/screen_brightness/set";
+        screenBrightnessStateTopic = topicPrefix + "/screen_brightness/state";
+        screenBrightnessDiscoveryTopic = "homeassistant/number/" + deviceId + "_screen_brightness/config";
+        screensaverBrightnessCommandTopic = topicPrefix + "/screensaver_brightness/set";
+        screensaverBrightnessStateTopic = topicPrefix + "/screensaver_brightness/state";
+        screensaverBrightnessDiscoveryTopic = "homeassistant/number/" + deviceId + "_screensaver_brightness/config";
+        screensaverSensorStateTopic = topicPrefix + "/screensaver/state";
+        screensaverSensorDiscoveryTopic = "homeassistant/binary_sensor/" + deviceId + "_screensaver/config";
+
+        // Load brightness settings
+        brightnessEnabled = prefs.getBoolean("brightness_enabled", false);
+        fullyPassword = prefs.getString("fully_password", "");
+
         restoreState();
         openSerialDevice();
         connectMqtt(host, port, prefs.getString("user", ""), prefs.getString("pass", ""));
@@ -121,6 +161,7 @@ public class MqttLightService extends Service {
 
     @Override
     public void onDestroy() {
+        stopFullyPolling();
         disconnectMqtt();
         closeSerialDevice();
         if (ledThread != null) {
@@ -181,6 +222,10 @@ public class MqttLightService extends Service {
                             String payload = new String(message.getPayload());
                             if (topic.equals(speedCommandTopic)) {
                                 handleSpeedCommand(payload);
+                            } else if (topic.equals(screenBrightnessCommandTopic)) {
+                                handleScreenBrightnessCommand(payload);
+                            } else if (topic.equals(screensaverBrightnessCommandTopic)) {
+                                handleScreensaverBrightnessCommand(payload);
                             } else {
                                 handleCommand(payload);
                             }
@@ -219,6 +264,10 @@ public class MqttLightService extends Service {
                     // Subscribe to command topics
                     mqttClient.subscribe(commandTopic, 1);
                     mqttClient.subscribe(speedCommandTopic, 1);
+                    if (brightnessEnabled) {
+                        mqttClient.subscribe(screenBrightnessCommandTopic, 1);
+                        mqttClient.subscribe(screensaverBrightnessCommandTopic, 1);
+                    }
 
                     // Publish discovery config
                     publishDiscovery();
@@ -229,6 +278,11 @@ public class MqttLightService extends Service {
                     // Restore last light state and publish
                     publishState();
                     publishSpeedState();
+                    if (brightnessEnabled) {
+                        publishScreenBrightnessState();
+                        publishScreensaverBrightnessState();
+                        startFullyPolling();
+                    }
                     if (lightOn) {
                         ledHandler.post(new Runnable() {
                             @Override
@@ -331,6 +385,11 @@ public class MqttLightService extends Service {
 
             publish(speedDiscoveryTopic, speedConfig.toString(), true);
             Log.i(TAG, "Published HA breathing speed discovery config");
+
+            // Publish brightness control discovery if enabled
+            if (brightnessEnabled) {
+                publishBrightnessDiscovery(device);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error publishing discovery", e);
         }
@@ -563,6 +622,8 @@ public class MqttLightService extends Service {
                 .putInt("brightness", brightness)
                 .putString("effect", currentEffect)
                 .putInt("breathing_speed", breathingSpeed)
+                .putInt("screen_brightness", screenBrightness)
+                .putInt("screensaver_brightness", screensaverBrightness)
                 .apply();
     }
 
@@ -576,12 +637,217 @@ public class MqttLightService extends Service {
         brightness = sp.getInt("brightness", 255);
         currentEffect = sp.getString("effect", "solid");
         breathingSpeed = sp.getInt("breathing_speed", 5);
+        screenBrightness = sp.getInt("screen_brightness", 128);
+        screensaverBrightness = sp.getInt("screensaver_brightness", 10);
     }
 
     private void broadcastStatus(String status) {
         Intent intent = new Intent("com.ys.halightbridge.MQTT_STATUS");
         intent.putExtra("status", status);
         sendBroadcast(intent);
+    }
+
+    // ======================== Brightness Control ========================
+
+    private void publishBrightnessDiscovery(JSONObject device) {
+        try {
+            // Screen brightness number entity
+            JSONObject screenBrtConfig = new JSONObject();
+            screenBrtConfig.put("name", "Screen Brightness");
+            screenBrtConfig.put("unique_id", topicPrefix + "_screen_brightness");
+            screenBrtConfig.put("object_id", topicPrefix + "_screen_brightness");
+            screenBrtConfig.put("command_topic", screenBrightnessCommandTopic);
+            screenBrtConfig.put("state_topic", screenBrightnessStateTopic);
+            screenBrtConfig.put("availability_topic", availabilityTopic);
+            screenBrtConfig.put("min", 1);
+            screenBrtConfig.put("max", 255);
+            screenBrtConfig.put("step", 1);
+            screenBrtConfig.put("icon", "mdi:brightness-6");
+            screenBrtConfig.put("device", device);
+            publish(screenBrightnessDiscoveryTopic, screenBrtConfig.toString(), true);
+
+            // Screensaver brightness number entity
+            JSONObject ssaverBrtConfig = new JSONObject();
+            ssaverBrtConfig.put("name", "Screensaver Brightness");
+            ssaverBrtConfig.put("unique_id", topicPrefix + "_screensaver_brightness");
+            ssaverBrtConfig.put("object_id", topicPrefix + "_screensaver_brightness");
+            ssaverBrtConfig.put("command_topic", screensaverBrightnessCommandTopic);
+            ssaverBrtConfig.put("state_topic", screensaverBrightnessStateTopic);
+            ssaverBrtConfig.put("availability_topic", availabilityTopic);
+            ssaverBrtConfig.put("min", 1);
+            ssaverBrtConfig.put("max", 255);
+            ssaverBrtConfig.put("step", 1);
+            ssaverBrtConfig.put("icon", "mdi:brightness-4");
+            ssaverBrtConfig.put("device", device);
+            publish(screensaverBrightnessDiscoveryTopic, ssaverBrtConfig.toString(), true);
+
+            // Screensaver active binary sensor
+            JSONObject sensorConfig = new JSONObject();
+            sensorConfig.put("name", "Screensaver");
+            sensorConfig.put("unique_id", topicPrefix + "_screensaver");
+            sensorConfig.put("object_id", topicPrefix + "_screensaver");
+            sensorConfig.put("state_topic", screensaverSensorStateTopic);
+            sensorConfig.put("availability_topic", availabilityTopic);
+            sensorConfig.put("payload_on", "ON");
+            sensorConfig.put("payload_off", "OFF");
+            sensorConfig.put("icon", "mdi:monitor-eye");
+            sensorConfig.put("device", device);
+            publish(screensaverSensorDiscoveryTopic, sensorConfig.toString(), true);
+
+            Log.i(TAG, "Published brightness control discovery configs");
+        } catch (Exception e) {
+            Log.e(TAG, "Error publishing brightness discovery", e);
+        }
+    }
+
+    private void publishScreenBrightnessState() {
+        publish(screenBrightnessStateTopic, String.valueOf(screenBrightness), true);
+    }
+
+    private void publishScreensaverBrightnessState() {
+        publish(screensaverBrightnessStateTopic, String.valueOf(screensaverBrightness), true);
+    }
+
+    private void publishScreensaverSensorState(boolean active) {
+        publish(screensaverSensorStateTopic, active ? "ON" : "OFF", true);
+    }
+
+    private void handleScreenBrightnessCommand(final String payload) {
+        try {
+            int value = Math.round(Float.parseFloat(payload.trim()));
+            if (value < 1) value = 1;
+            if (value > 255) value = 255;
+            screenBrightness = value;
+            saveState();
+            publishScreenBrightnessState();
+            // Apply immediately if screensaver is NOT active
+            if (!lastScreensaverState) {
+                setSystemBrightness(screenBrightness);
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid screen brightness value: " + payload, e);
+        }
+    }
+
+    private void handleScreensaverBrightnessCommand(final String payload) {
+        try {
+            int value = Math.round(Float.parseFloat(payload.trim()));
+            if (value < 1) value = 1;
+            if (value > 255) value = 255;
+            screensaverBrightness = value;
+            saveState();
+            publishScreensaverBrightnessState();
+            // Apply immediately if screensaver IS active
+            if (lastScreensaverState) {
+                setSystemBrightness(screensaverBrightness);
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid screensaver brightness value: " + payload, e);
+        }
+    }
+
+    private void setSystemBrightness(int value) {
+        try {
+            ContentResolver resolver = getContentResolver();
+            // Disable auto-brightness first
+            Settings.System.putInt(resolver, Settings.System.SCREEN_BRIGHTNESS_MODE,
+                    Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+            // Set brightness (0-255)
+            Settings.System.putInt(resolver, Settings.System.SCREEN_BRIGHTNESS, value);
+            Log.d(TAG, "Set system brightness to " + value);
+        } catch (Exception e) {
+            Log.e(TAG, "Error setting system brightness", e);
+        }
+    }
+
+    private void startFullyPolling() {
+        if (pollingRunning) return;
+        pollingRunning = true;
+        pollingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "Fully screensaver polling started");
+                while (pollingRunning) {
+                    try {
+                        JSONObject info = queryFullyDeviceInfo();
+                        if (info == null) {
+                            Thread.sleep(5000);
+                            continue;
+                        }
+
+                        boolean screensaverActive = info.optBoolean("isInScreensaver", false);
+                        long interactionTime = info.optLong("lastUserInteractionTime", 0);
+
+                        // Anticipate screensaver exit: user tapped while screensaver is active
+                        if (screensaverActive && lastScreensaverState && interactionTime != lastUserInteractionTime) {
+                            Log.i(TAG, "User interaction detected during screensaver, pre-applying screen brightness");
+                            setSystemBrightness(screenBrightness);
+                        }
+
+                        lastUserInteractionTime = interactionTime;
+
+                        if (screensaverActive != lastScreensaverState) {
+                            lastScreensaverState = screensaverActive;
+                            Log.i(TAG, "Screensaver state changed: " + screensaverActive);
+                            publishScreensaverSensorState(screensaverActive);
+                            if (screensaverActive) {
+                                setSystemBrightness(screensaverBrightness);
+                            } else {
+                                setSystemBrightness(screenBrightness);
+                            }
+                        }
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error in Fully polling", e);
+                        try { Thread.sleep(5000); } catch (InterruptedException ie) { break; }
+                    }
+                }
+                Log.i(TAG, "Fully screensaver polling stopped");
+            }
+        });
+        pollingThread.start();
+    }
+
+    private void stopFullyPolling() {
+        pollingRunning = false;
+        if (pollingThread != null) {
+            pollingThread.interrupt();
+            try {
+                pollingThread.join(3000);
+            } catch (InterruptedException ignored) {
+            }
+            pollingThread = null;
+        }
+    }
+
+    private JSONObject queryFullyDeviceInfo() {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL("http://localhost:2323/?cmd=deviceInfo&type=json&password=" + fullyPassword);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(3000);
+
+            int code = conn.getResponseCode();
+            if (code == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                reader.close();
+                return new JSONObject(sb.toString());
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error querying Fully API", e);
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
+        return null;
     }
 
     // Notification helpers

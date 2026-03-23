@@ -7,12 +7,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -24,7 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SettingsActivity extends Activity {
-    private EditText hostEdit, portEdit, userEdit, passEdit, deviceIdEdit;
+    private EditText hostEdit, portEdit, userEdit, passEdit, deviceIdEdit, fullyPasswordEdit;
+    private CheckBox brightnessEnabledCheck;
     private Spinner serialPortSpinner;
     private TextView statusText;
     private Button saveButton, disconnectButton, testUiButton;
@@ -59,6 +63,8 @@ public class SettingsActivity extends Activity {
         disconnectButton = findViewById(R.id.settings_disconnect_btn);
         testUiButton = findViewById(R.id.settings_test_ui_btn);
         serialPortSpinner = findViewById(R.id.settings_serial_port);
+        fullyPasswordEdit = findViewById(R.id.settings_fully_password);
+        brightnessEnabledCheck = findViewById(R.id.settings_brightness_enabled);
 
         // Populate serial port spinner with ports that exist on this device
         List<String> availablePorts = new ArrayList<>();
@@ -75,6 +81,7 @@ public class SettingsActivity extends Activity {
         serialPortSpinner.setAdapter(portAdapter);
 
         loadSettings();
+        checkWriteSettingsPermission();
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,6 +131,9 @@ public class SettingsActivity extends Activity {
         if (pos >= 0) {
             serialPortSpinner.setSelection(pos);
         }
+
+        fullyPasswordEdit.setText(prefs.getString("fully_password", ""));
+        brightnessEnabledCheck.setChecked(prefs.getBoolean("brightness_enabled", false));
     }
 
     private void saveAndConnect() {
@@ -155,6 +165,8 @@ public class SettingsActivity extends Activity {
         editor.putString("pass", pass);
         editor.putString("device_id", deviceId);
         editor.putString("serial_port", serialPortSpinner.getSelectedItem().toString());
+        editor.putString("fully_password", fullyPasswordEdit.getText().toString().trim());
+        editor.putBoolean("brightness_enabled", brightnessEnabledCheck.isChecked());
         editor.apply();
 
         // Stop existing service and restart
@@ -192,4 +204,14 @@ public class SettingsActivity extends Activity {
         }
     }
 
+    private void checkWriteSettingsPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.System.canWrite(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+                Toast.makeText(this, "Please allow Modify System Settings for brightness control", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }
