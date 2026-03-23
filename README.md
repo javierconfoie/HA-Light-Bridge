@@ -43,7 +43,7 @@ Home Assistant ←→ MQTT Broker ←→ [MqttLightService] ←→ Serial Port (
 ```
 
 The app has two components:
-1. **SettingsActivity** — Configure MQTT broker connection (host, port, user, password, device ID) and serial port. Only needed once.
+1. **SettingsActivity** — Configure MQTT broker connection (host, port, user, password, device ID) and serial port. Includes an **"Open LED Test Panel"** button that launches a standalone UI for directly testing the LED strip without MQTT — useful for verifying hardware wiring, color mapping, and serial port configuration.
 2. **MqttLightService** — Foreground service that maintains the MQTT connection and controls LEDs via serial. Runs independently of any UI.
 
 ## MQTT Topics
